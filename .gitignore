@@ -1,1 +1,4 @@
 vendor
+/nbproject
+/var/cache
+/var/log
