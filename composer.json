@@ -6,17 +6,21 @@
         "ext-iconv": "*",
         "facebook/webdriver": "^1.5",
         "sensio/framework-extra-bundle": "^5.1",
+        "sonata-project/admin-bundle": "^3.30",
+        "sonata-project/doctrine-orm-admin-bundle": "^3.3",
+        "sunra/php-simple-html-dom-parser": "^1.5",
         "symfony/apache-pack": "^1.0",
         "symfony/console": "^4.0",
         "symfony/flex": "^1.0",
         "symfony/framework-bundle": "^4.0",
         "symfony/lts": "^4@dev",
-        "symfony/maker-bundle": "^1.0",
+        "symfony/monolog-bundle": "^3.1",
         "symfony/orm-pack": "^1.0",
         "symfony/yaml": "^4.0"
     },
     "require-dev": {
         "symfony/dotenv": "^4.0",
+        "symfony/maker-bundle": "^1.0",
         "symfony/profiler-pack": "^1.0"
     },
     "config": {
