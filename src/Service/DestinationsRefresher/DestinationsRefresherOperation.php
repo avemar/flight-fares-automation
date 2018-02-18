@@ -9,7 +9,7 @@ use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\Exception\WebDriverException;
 
 use App\Service\WebDriver;
-use App\Entity\Destination;
+use App\Service\DestinationsSelector\DestinationsSelectorOperation;
 
 /**
  * Description of DestinationsRefresherOperation
@@ -20,14 +20,17 @@ class DestinationsRefresherOperation
 {
     private $airlineId;
     private $webDriver;
+    private $webDriverSession;
     private $webDriverWait;
     private $logger;
-    private $destinations = [];
+    private $fromDestinations = [];
+    private $routes = [];
 
     public function __construct($airlineId, LoggerInterface $logger)
     {
         $this->airlineId = $airlineId;
         $this->webDriver = WebDriver::getWebDriver();
+        $this->webDriverSession = $this->webDriver->getSessionID();
         $this->webDriverWait = new WebDriverWait($this->webDriver, 5);
         $this->logger = $logger;
         libxml_use_internal_errors(true);
@@ -73,11 +76,11 @@ class DestinationsRefresherOperation
                     WebDriverExpectedCondition::visibilityOfElementLocated(
                         WebDriverBy::name($formElementFieldName)
                     )
-                );                
-                $originField = $this->webDriver->findElement(
+                );
+                $fromField = $this->webDriver->findElement(
                     WebDriverBy::name($formElementFieldName)
                 );
-                $originField->click();
+                $fromField->click();
                 
                 $destinationsCollectionXpath = "/html/body/div[5]/ul";                
                 $this->webDriverWait->until(
@@ -94,9 +97,9 @@ class DestinationsRefresherOperation
                 $domListDestinations = $xpath->query($destinationXpath);
 
                 foreach ($domListDestinations as $domNode) {
-                    $originXpath = $domNode->getNodePath();
+                    $xpath = $domNode->getNodePath();
                     $webDriverDestination = $this->webDriver->findElement(
-                        WebDriverBy::xpath($originXpath)
+                        WebDriverBy::xpath($xpath)
                     );
 
                     preg_match(
@@ -105,10 +108,71 @@ class DestinationsRefresherOperation
                         $iataCode
                     );
 
-                    $this->appendDestination(array_pop($iataCode), $originXpath);
+                    $this->appendFromDestination(array_pop($iataCode));
                 }
 
-                return $this->destinations;
+                return $this->fromDestinations;
+        }
+    }
+
+    public function getRoutes()
+    {
+        $destSelectorOp = new DestinationsSelectorOperation(
+            $this->airlineId,
+            $this->logger,
+            $this->webDriver
+        );
+
+        switch ($this->airlineId) {
+            // Sri Lankan Airlines
+            case 4349:
+                $formElementFieldName = 'suggest2';
+                $toField = $this->webDriver->findElement(
+                    WebDriverBy::name($formElementFieldName)
+                );
+                $destinationsCollectionXpath = "/html/body/div[6]/ul";
+
+                foreach ($this->fromDestinations as $fromDestination) {
+                    if (!$destSelectorOp->selectFromDestination($fromDestination['iata'])) {
+                        // From destination not found. Consider logging
+                        continue;
+                    }
+
+                    $toField->click();
+
+                    $this->webDriverWait->until(
+                        WebDriverExpectedCondition::presenceOfElementLocated(
+                            WebDriverBy::xpath($destinationsCollectionXpath)
+                        )
+                    );
+
+                    $dom = new \DOMDocument;
+                    $dom->loadHTML($this->webDriver->getPageSource());
+                    $xpath = new \DOMXPath($dom);
+
+                    $destinationXpath = $destinationsCollectionXpath . "/li";
+                    $domListDestinations = $xpath->query($destinationXpath);
+
+                    foreach ($domListDestinations as $domNode) {
+                        $xpath = $domNode->getNodePath();
+                        $webDriverDestination = $this->webDriver->findElement(
+                            WebDriverBy::xpath($xpath)
+                        );
+
+                        preg_match(
+                            '/(?:\b[A-Z]{3,}\b)/',
+                            $webDriverDestination->getText(),
+                            $iataCode
+                        );
+
+                        $this->appendRoute(
+                            $fromDestination['iata'],
+                            array_pop($iataCode)
+                        );
+                    }
+                }
+
+                return $this->routes;
         }
     }
 
@@ -117,11 +181,18 @@ class DestinationsRefresherOperation
         $this->webDriver->quit();
     }
 
-    private function appendDestination($iataCode, $originXpath)
+    private function appendFromDestination($iataCode)
     {
-        $this->destinations[] = [
+        $this->fromDestinations[] = [
             'iata' => $iataCode,
-            'origin_xpath' => $originXpath,
+        ];
+    }
+
+    private function appendRoute($fromIataCode, $toIataCode)
+    {
+        $this->routes[] = [
+            'from_iata' => $fromIataCode,
+            'to_iata' => $toIataCode,
         ];
     }
 }

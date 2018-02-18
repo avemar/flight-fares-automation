@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Airline;
 use App\Entity\Airport;
 use App\Entity\Destination;
+use App\Entity\Route;
 use App\Service\DestinationsRefresher\DestinationsRefresherOperation;
 
 /**
@@ -18,12 +19,14 @@ use App\Service\DestinationsRefresher\DestinationsRefresherOperation;
  *
  * @author avemar
  */
-class DestinationsRefresher {
+class DestinationsRefresher
+{
     private $logger;    
     private $em;
     private $airlineRepo;
     private $airportRepo;
     private $destinationRepo;
+    private $routeRepo;
     private $airline;
 
     public function __construct(
@@ -34,6 +37,7 @@ class DestinationsRefresher {
         $this->airlineRepo = $em->getRepository(Airline::class);
         $this->airportRepo = $em->getRepository(Airport::class);
         $this->destinationRepo = $em->getRepository(Destination::class);
+        $this->routeRepo = $em->getRepository(Route::class);
         $this->logger = $logger;
     }
 
@@ -49,6 +53,7 @@ class DestinationsRefresher {
         $operation->goToUrl($this->getAirlineUrl());
         $operation->goToDestinationsUrl();
         $this->saveFromDestinations($operation->getFromDestinations());
+        $this->saveRoutes($operation->getRoutes());
         $operation->closeOperation();
         return true;
     }
@@ -62,7 +67,7 @@ class DestinationsRefresher {
     {
         $this->airline = $this->airlineRepo->find($airlineId);
     }
-    
+
     private function saveFromDestinations(array $fromDestinations)
     {
         if (empty($fromDestinations)) {
@@ -75,7 +80,7 @@ class DestinationsRefresher {
             );
 
             if (is_null($destinationAirport)) {
-                // log airport not found
+                // TODO log airport not found
                 continue;
             }
 
@@ -83,20 +88,64 @@ class DestinationsRefresher {
                 'airport' => $destinationAirport,
                 'airline' => $this->airline,
             ]);
-            
+
             if (is_null($destination)) {
                 $destination = new Destination();
 
                 $destination
                     ->setAirline($this->airline)
-                    ->setAirport($destinationAirport)
-                    ->setOriginXpath($fromDestination['origin_xpath']);
-             
+                    ->setAirport($destinationAirport);
+                    //->setOriginXpath($fromDestination['xpath']);
+
                 $this->em->persist($destination);
                 continue;
             }
 
-            $destination->setOriginXpath($fromDestination['origin_xpath']);
+            // Not used at the moment
+            // $destination->setOriginXpath($fromDestination['xpath']);
+        }
+
+        $this->em->flush();
+    }
+
+    private function saveRoutes(array $routes)
+    {
+        if (empty($routes)) {
+            return;
+        }
+
+        foreach ($routes as $route) {
+            $fromAirport = $this->airportRepo->findOneByIata(
+                $route['from_iata']
+            );
+            $toAirport = $this->airportRepo->findOneByIata(
+                $route['to_iata']
+            );
+
+            if (is_null($fromAirport) || is_null($toAirport)) {
+                // TODO log airport not found
+                continue;
+            }
+
+            $route = $this->routeRepo->findOneBy([
+                'airline' => $this->airline,
+                'fromAirport' => $fromAirport,
+                'toAirport' => $toAirport,
+            ]);
+
+            if (is_null($route)) {
+                $route = new Route();
+
+                $route
+                    ->setAirline($this->airline)
+                    ->setFromAirport($fromAirport)
+                    ->setToAirport($toAirport);
+
+                $this->em->persist($route);
+                continue;
+            }
+
+            // TODO implement update with active / inactive flag
         }
 
         $this->em->flush();

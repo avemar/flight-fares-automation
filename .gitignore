@@ -2,3 +2,4 @@ vendor
 /nbproject
 /var/cache
 /var/log
+/src/Migrations

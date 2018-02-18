@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Destination;
+use App\Entity\Route;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\AirlineRepository")
@@ -13,6 +14,7 @@ class Airline
 {
     public function __construct() {
         $this->destinations = new ArrayCollection();
+        $this->routes = new ArrayCollection();
     }
 
     /**
@@ -61,6 +63,11 @@ class Airline
          * @ORM\OneToMany(targetEntity="Destination", mappedBy="airline")
          */
     private $destinations;
+    
+    /**
+         * @ORM\OneToMany(targetEntity="Route", mappedBy="airline")
+         */
+    private $routes;
 
 
     public function getId() {
@@ -97,6 +104,10 @@ class Airline
 
     public function getDestinations() {
         return $this->destinations;
+    }
+
+    public function getRoutes() {
+        return $this->routes;
     }
 
     public function setName($name) {
@@ -149,6 +160,18 @@ class Airline
 
     public function removeDestination(Destination $destination) {
         $this->destinations->removeElement($destination);
+
+        return $this;
+    }
+
+    public function addRoute(Route $route) {
+        $this->routes->add($route);
+
+        return $this;
+    }
+
+    public function removeRoute(Route $route) {
+        $this->routes->removeElement($route);
 
         return $this;
     }

@@ -5,46 +5,42 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\DestinationRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\RouteRepository")
  * @ORM\Table(uniqueConstraints={
  *     @ORM\UniqueConstraint(
- *         name="airline_airport_unique_idx",
- *         columns={"airport_id", "airline_id"}
+ *         name="airline_airports_unique_idx",
+ *         columns={"airline_id", "from_airport_id", "to_airport_id"}
  *     )
  * })
  * @ORM\HasLifecycleCallbacks
  */
-class Destination
+class Route
 {
     /**
          * @ORM\Id
          * @ORM\GeneratedValue
          * @ORM\Column(type="integer")
          */
-    private $id;    
+    private $id;
 
     /**
          * @ORM\ManyToOne(targetEntity="Airport")
          * @ORM\JoinColumn(nullable=false)
          */
-    private $airport;
+    private $fromAirport;
 
     /**
-         * @ORM\ManyToOne(targetEntity="Airline", inversedBy="destinations")
+         * @ORM\ManyToOne(targetEntity="Airport")
          * @ORM\JoinColumn(nullable=false)
          */
-    private $airline;
+    private $toAirport;
 
     /**
-         * @ORM\Column(type="string", nullable=true)
+         * @ORM\ManyToOne(targetEntity="Airline", inversedBy="routes")
+         * @ORM\JoinColumn(nullable=false)
          */
-    private $originXpath;
-
-    /**
-         * @ORM\Column(type="string", nullable=true)
-         */
-    private $destinationXpath;
-
+    private $airline;    
+    
     /**
          * @ORM\Column(type="datetime")
          */
@@ -60,20 +56,16 @@ class Destination
         return $this->id;
     }
 
-    public function getAirport() {
-        return $this->airport;
+    public function getFromAirport() {
+        return $this->fromAirport;
+    }
+
+    public function getToAirport() {
+        return $this->toAirport;
     }
 
     public function getAirline() {
         return $this->airline;
-    }
-
-    public function getOriginXpath() {
-        return $this->originXpath;
-    }
-
-    public function getDestinationXpath() {
-        return $this->destinationXpath;
     }
 
     public function getCreated() {
@@ -84,8 +76,14 @@ class Destination
         return $this->updated;
     }
 
-    public function setAirport($airport) {
-        $this->airport = $airport;
+    public function setFromAirport($airport) {
+        $this->fromAirport = $airport;
+
+        return $this;
+    }
+
+    public function setToAirport($airport) {
+        $this->toAirport = $airport;
 
         return $this;
     }
@@ -94,19 +92,7 @@ class Destination
         $this->airline = $airline;
 
         return $this;
-    }
-
-    public function setOriginXpath($originXpath) {
-        $this->originXpath = $originXpath;
-
-        return $this;
-    }
-
-    public function setDestinationXpath($destinationXpath) {
-        $this->destinationXpath = $destinationXpath;
-
-        return $this;
-    }
+    }    
 
     public function setCreated($created) {
         $this->created = $created;
