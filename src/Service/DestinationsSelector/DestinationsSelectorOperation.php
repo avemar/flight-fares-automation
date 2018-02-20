@@ -40,6 +40,12 @@ class DestinationsSelectorOperation
         switch ($this->airlineId) {
             // Sri Lankan Airlines
             case 4349:
+                $this->webDriverWait->until(
+                    WebDriverExpectedCondition::presenceOfElementLocated(
+                        WebDriverBy::name('suggest1')
+                    )
+                );                
+
                 $fromField = $this->webDriver->findElement(
                     WebDriverBy::name('suggest1')
                 );
@@ -84,6 +90,15 @@ class DestinationsSelectorOperation
                 }
 
                 return false;
+        }
+    }
+
+    public function selectDepartureDate()
+    {
+        switch ($this->airlineId) {
+            // Sri Lankan Airlines
+            case 4349:
+                
         }
     }
 }

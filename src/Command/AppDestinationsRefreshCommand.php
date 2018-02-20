@@ -19,9 +19,9 @@ class AppDestinationsRefreshCommand extends Command
 
     public function __construct(DestinationsRefresher $destinationsRefresher)
     {
-        $this->destinationsRefresher = $destinationsRefresher;
-
         parent::__construct();
+
+        $this->destinationsRefresher = $destinationsRefresher;
     }
 
     protected function configure()

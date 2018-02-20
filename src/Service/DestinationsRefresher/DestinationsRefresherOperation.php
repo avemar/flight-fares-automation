@@ -3,12 +3,13 @@
 namespace App\Service\DestinationsRefresher;
 
 use Psr\Log\LoggerInterface;
+use Facebook\WebDriver\WebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\Exception\WebDriverException;
 
-use App\Service\WebDriver;
+use App\Service\WebDriver as AppWebDriver;
 use App\Service\DestinationsSelector\DestinationsSelectorOperation;
 
 /**
@@ -26,10 +27,13 @@ class DestinationsRefresherOperation
     private $fromDestinations = [];
     private $routes = [];
 
-    public function __construct($airlineId, LoggerInterface $logger)
-    {
+    public function __construct(
+        $airlineId,
+        LoggerInterface $logger,
+        WebDriver $webDriver = null
+    ) {
         $this->airlineId = $airlineId;
-        $this->webDriver = WebDriver::getWebDriver();
+        $this->webDriver = !is_null($webDriver) ? $webDriver : AppWebDriver::getWebDriver();
         $this->webDriverSession = $this->webDriver->getSessionID();
         $this->webDriverWait = new WebDriverWait($this->webDriver, 5);
         $this->logger = $logger;
