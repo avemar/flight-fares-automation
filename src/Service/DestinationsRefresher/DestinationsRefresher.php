@@ -114,7 +114,10 @@ class DestinationsRefresher
             return;
         }
 
+        $i = 0;
+
         foreach ($routes as $route) {
+            $i++;            
             $fromAirport = $this->airportRepo->findOneByIata(
                 $route['from_iata']
             );
@@ -145,6 +148,9 @@ class DestinationsRefresher
                 continue;
             }
 
+            if ($i % 50 === 0) {
+                $this->em->flush();
+            }
             // TODO implement update with active / inactive flag
         }
 

@@ -42,7 +42,8 @@ class DestinationsRefresherOperation
 
     public function goToUrl($url)
     {
-        $this->webDriver->get($url);
+        $this->webDriver->navigate()->to($url);
+//        $this->webDriver->get($url);
     }
 
     public function goToDestinationsUrl()
