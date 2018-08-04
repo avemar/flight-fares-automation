@@ -14,12 +14,10 @@ class LuckyController
      */
     public function number()
     {
-//        $number = mt_rand(0, 100);
-//
-//        return new Response(
-//            '<html><body>Lucky number: '.$number.'</body></html>'
-//        );
-        
-        $driver = RemoteWebDriver::create('http://localhost:4444/wd/hub', DesiredCapabilities::chrome());
+        $number = mt_rand(0, 100);
+
+        return new Response(
+            '<html><body>Lucky number: '.$number.'</body></html>'
+        );
     }
 }

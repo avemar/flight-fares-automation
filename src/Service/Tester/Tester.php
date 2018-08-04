@@ -64,6 +64,7 @@ class Tester
                 );
 
                 $operation->goToUrl($this->airline->getUrl());
+                $this->webDriver->takeScreenshot('/home/avemar/Downloads/selenium_screen.png');
                 $operation->goToDestinationsUrl();
 
                 $destSelectorOp = new DestinationsSelectorOperation(

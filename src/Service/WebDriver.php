@@ -17,7 +17,7 @@ class WebDriver
     {
         $desiredCapabilities = DesiredCapabilities::chrome();
         $options = new ChromeOptions();
-        $options->addArguments(['--window-size=1920,1080', '--headless']);
+        $options->addArguments(['--window-size=1920,1080', '--ignore-certificate-errors']);
         $desiredCapabilities->setCapability(ChromeOptions::CAPABILITY, $options);
 
         return RemoteWebDriver::create(
